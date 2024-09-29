@@ -1,6 +1,10 @@
 class Api::V1::WalletsController < ApplicationController
+  include ApiKeyAuthenticatable
+
+  prepend_before_action :authenticate_with_api_key!, only: %i[index show create]
+
   def index
-    wallets = Wallet.all
+    wallets = Wallet.where(owner_id: current_bearer.id)
     render json: wallets, status: 200
   end
 
@@ -17,11 +21,11 @@ class Api::V1::WalletsController < ApplicationController
   end
 
   def show
-    wallet = Wallet.find(params[:id])
+    wallet = Wallet.find_by(id: params[:id], owner_id: current_bearer.id)
     if wallet
       render json: wallet, status: 200
     else
-      render json: { error: "Wallet Not Found." }
+      render json: { error: "Wallet is not found or not yours." }
     end
   end
 

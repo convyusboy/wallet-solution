@@ -1,4 +1,8 @@
 class Api::V1::StocksController < ApplicationController
+  include ApiKeyAuthenticatable
+
+  prepend_before_action :authenticate_with_api_key!, only: %i[index show create]
+
   def index
     stocks = Stock.all
     render json: stocks, status: 200

@@ -1,4 +1,8 @@
 class Api::V1::TeamsController < ApplicationController
+  include ApiKeyAuthenticatable
+
+  prepend_before_action :authenticate_with_api_key!, only: %i[index show create]
+
   def index
     teams = Team.all
     render json: teams, status: 200
