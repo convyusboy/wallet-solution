@@ -1,6 +1,7 @@
 Rails.application.routes.draw do
   namespace :api do
     namespace :v1 do
+      resources :api_keys, path: "api-keys", only: %i[index create destroy]
       resources :users, only: [ :index, :show, :create ]
       resources :transactions, only: [ :index, :show, :create ]
       resources :teams, only: [ :index, :show, :create ]
