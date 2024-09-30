@@ -1,8 +1,4 @@
 class Api::V1::UsersController < ApplicationController
-  include ApiKeyAuthenticatable
-
-  prepend_before_action :authenticate_with_api_key!, only: %i[index show create]
-
   def index
     users = User.all
     render json: users, status: 200
@@ -10,14 +6,13 @@ class Api::V1::UsersController < ApplicationController
 
   def create
     user = User.new(
-      username: user_params[:username],
+      email: user_params[:email],
       password: user_params[:password]
     )
-    if user.save
-      render json: user, status: 200
-    else
-      render json: { error: "Error creating user." }
-    end
+    user.save!
+    render json: user, status: 200
+  rescue ActiveRecord::RecordInvalid => e
+    render json: { error: e.record.errors.full_messages }, status: :unprocessable_entity
   end
 
   def show
@@ -32,7 +27,7 @@ class Api::V1::UsersController < ApplicationController
   private
   def user_params
     params.require(:user).permit([
-      :username,
+      :email,
       :password
     ])
   end

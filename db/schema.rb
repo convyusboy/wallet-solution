@@ -54,8 +54,9 @@ ActiveRecord::Schema[7.2].define(version: 2024_09_29_143316) do
   end
 
   create_table "wallets", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
-    t.integer "amount"
+    t.integer "amount", default: 0
     t.integer "owner_id"
+    t.string "wallet_type"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
   end

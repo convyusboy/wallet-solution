@@ -1,14 +1,18 @@
 Rails.application.routes.draw do
   namespace :api do
     namespace :v1 do
-      resources :api_keys, path: "api-keys", only: %i[index create destroy]
+      resources :api_keys, path: "api-keys", only: %i[create destroy]
       resources :users, only: [ :index, :show, :create ]
+      resources :deposits, only: [ :index, :show, :create ]
+      resources :withdrawals, only: [ :index, :show, :create ]
       resources :transactions, only: [ :index, :show, :create ]
-      resources :teams, only: [ :index, :show, :create ]
-      resources :wallets, only: [ :index, :show, :create ]
-      resources :stocks, only: [ :index, :show, :create ]
-      post "deposits", to: "transactions#deposit"
-      post "withdraw", to: "transactions#withdraw"
+      resources :teams, only: [ :index ]
+      resources :wallets, only: [ :index ]
+      resources :stocks, only: [ :index ]
+      patch "stocks/sell", to: "stocks#sell"
+      get "team-wallets", to: "wallets#team_wallet_index"
+      post "team-wallets/withdraw", to: "withdrawals#team_wallet_create"
+      get "me", to: "api_keys#index"
     end
   end
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html

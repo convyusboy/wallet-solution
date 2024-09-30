@@ -1,33 +1,24 @@
 class Api::V1::StocksController < ApplicationController
   include ApiKeyAuthenticatable
 
-  prepend_before_action :authenticate_with_api_key!, only: %i[index show create]
+  prepend_before_action :authenticate_with_api_key!, only: %i[index sell]
 
   def index
-    stocks = Stock.all
-    render json: stocks, status: 200
+    stock = current_bearer.stock
+    render json: stock, status: 200
   end
 
-  def create
-    stock = Stock.new(
-      amount: stock_params[:amount],
-      price: stock_params[:price],
-      owner_id: stock_params[:owner_id]
-    )
-    if stock.save
-      render json: stock, status: 200
-    else
-      render json: { error: "Error creating stock." }
+  def sell
+    stock = current_bearer.stock
+    wallet = current_bearer.wallet
+    stock_amount = stock_params[:amount]
+    ActiveRecord::Base.transaction do
+      stock.update!(amount: stock.amount - stock_amount.to_i)
+      wallet.update!(amount: wallet.amount + stock_amount.to_i * stock.price)
     end
-  end
-
-  def show
-    stock = Stock.find(params[:id])
-    if stock
-      render json: stock, status: 200
-    else
-      render json: { error: "Stock Not Found." }
-    end
+    render json: stock, status: 200
+  rescue ActiveRecord::RecordInvalid => e
+    render json: { error: e.record.errors.full_messages }, status: :unprocessable_entity
   end
 
   private

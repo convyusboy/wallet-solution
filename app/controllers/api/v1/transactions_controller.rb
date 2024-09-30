@@ -1,10 +1,10 @@
 class Api::V1::TransactionsController < ApplicationController
   include ApiKeyAuthenticatable
 
-  prepend_before_action :authenticate_with_api_key!, only: %i[index show create deposit withdraw]
+  prepend_before_action :authenticate_with_api_key!, only: %i[index show create]
 
   def index
-    wallet = Wallet.find_by(owner_id: current_bearer.id)
+    wallet = current_bearer.wallet
     transactions = Transaction.where(from_wallet_id: wallet.id)
     render json: transactions, status: 200
   end
@@ -31,53 +31,8 @@ class Api::V1::TransactionsController < ApplicationController
     render json: { error: e.record.errors.full_messages }, status: :unprocessable_entity
   end
 
-  def deposit
-    transaction_amount = transaction_params[:amount]
-    transaction_to_wallet_id = transaction_params[:to_wallet_id]
-    transaction_from_wallet_id = current_bearer.id
-    transaction = Transaction.new(
-      to_wallet_id: transaction_to_wallet_id,
-      from_wallet_id: transaction_from_wallet_id,
-      trx_type: "deposit",
-      amount: transaction_amount
-    )
-    wallet_from = Wallet.find(transaction_from_wallet_id)
-    wallet_to = Wallet.find(transaction_to_wallet_id)
-    ActiveRecord::Base.transaction do
-      transaction.save!
-      wallet_from.update!(amount: wallet_from.amount - transaction_amount.to_i)
-      wallet_to.update!(amount: wallet_to.amount + transaction_amount.to_i)
-    end
-    render json: transaction, status: 200
-  rescue ActiveRecord::RecordInvalid, ActiveRecord::RecordNotFound => e
-    render json: { error: e.record.errors.full_messages }, status: :unprocessable_entity
-  end
-
-  def withdraw
-    transaction_amount = transaction_params[:amount]
-    transaction_to_wallet_id = current_bearer.id
-    transaction_from_wallet_id = transaction_params[:from_wallet_id]
-    transaction = Transaction.new(
-      to_wallet_id: transaction_to_wallet_id,
-      from_wallet_id: transaction_from_wallet_id,
-      trx_type: "withdraw",
-      amount: transaction_amount
-    )
-    wallet_from = Wallet.find(transaction_from_wallet_id)
-    wallet_to = Wallet.find(transaction_to_wallet_id)
-    ActiveRecord::Base.transaction do
-      transaction.save!
-      wallet_from.update!(amount: wallet_from.amount - transaction_amount.to_i)
-      wallet_to.update!(amount: wallet_to.amount + transaction_amount.to_i)
-    end
-    render json: transaction, status: 200
-  rescue ActiveRecord::RecordInvalid => e
-    render json: { error: e.record.errors.full_messages }, status: :unprocessable_entity
-  end
-
   def show
-    wallet = Wallet.find_by(owner_id: current_bearer.id)
-    transaction = Transaction.find_by(id: params[:id], from_wallet_id: wallet.id)
+    transaction = Transaction.find_by(id: params[:id], from_wallet_id: current_bearer.wallet.id)
     if transaction
       render json: transaction, status: 200
     else

@@ -10,13 +10,13 @@ class Api::V1::TeamsController < ApplicationController
 
   def create
     team = Team.new(
-      leader_id: team_params[:leader_id]
+      leader_id: team_params[:leader_id],
+      name: team_params[:name]
     )
-    if team.save
-      render json: team, status: 200
-    else
-      render json: { error: "Error creating team." }
-    end
+    team.save!
+    render json: team, status: 200
+  rescue ActiveRecord::RecordInvalid => e
+    render json: { error: e.record.errors.full_messages }, status: :unprocessable_entity
   end
 
   def show
@@ -31,7 +31,8 @@ class Api::V1::TeamsController < ApplicationController
   private
   def team_params
     params.require(:team).permit([
-      :leader_id
+      :leader_id,
+      :name
     ])
   end
 end
