@@ -1,5 +1,6 @@
 class Api::V1::ApiKeysController < ApplicationController
   include ApiKeyAuthenticatable
+  include ApplicationHelper
 
   prepend_before_action :authenticate_with_api_key!, only: %i[index destroy]
 
@@ -11,7 +12,7 @@ class Api::V1::ApiKeysController < ApplicationController
     authenticate_with_http_basic do |email, password|
       user = User.find_by email: email
 
-      if user&.authenticate(password)
+      if user&.authenticate(encrypt(password))
         api_key = user.api_keys.create! token: SecureRandom.hex
 
         render json: api_key, status: :created and return

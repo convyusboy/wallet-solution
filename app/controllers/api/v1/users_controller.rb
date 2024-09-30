@@ -1,4 +1,5 @@
 class Api::V1::UsersController < ApplicationController
+  include ApplicationHelper
   def index
     users = User.all
     render json: users, status: 200
@@ -7,9 +8,10 @@ class Api::V1::UsersController < ApplicationController
   def create
     user = User.new(
       email: user_params[:email],
-      password: user_params[:password]
+      password: encrypt(user_params[:password])
     )
     user.save!
+    user.password = decrypt(user.password)
     render json: user, status: 200
   rescue ActiveRecord::RecordInvalid => e
     render json: { error: e.record.errors.full_messages }, status: :unprocessable_entity
