@@ -4,12 +4,12 @@ class Api::V1::WithdrawalsController < ApplicationController
   prepend_before_action :authenticate_with_api_key!, only: %i[index show create team_wallet_create]
 
   def index
-    withdrawals = Transaction.where(from_wallet_id: current_bearer.wallet.id, trx_type: "withdrawal")
+    withdrawals = Withdrawal.where(from_wallet_id: current_bearer.wallet.id, trx_type: "withdrawal")
     render json: withdrawals, status: 200
   end
 
   def show
-    withdrawal = Transaction.find_by(id: params[:id], from_wallet_id: current_bearer.wallet.id, trx_type: "withdrawal")
+    withdrawal = Withdrawal.find_by(id: params[:id], from_wallet_id: current_bearer.wallet.id, trx_type: "withdrawal")
     render json: withdrawal, status: 200
   end
 
@@ -17,7 +17,7 @@ class Api::V1::WithdrawalsController < ApplicationController
     wallet_to = current_bearer.wallet
     withdrawal_amount = withdrawal_params[:amount]
     withdrawal_from_wallet_id = withdrawal_params[:from_wallet_id]
-    withdrawal = Transaction.new(
+    withdrawal = Withdrawal.new(
       to_wallet_id: wallet_to.id,
       from_wallet_id: withdrawal_from_wallet_id,
       trx_type: "withdrawal",
@@ -39,7 +39,7 @@ class Api::V1::WithdrawalsController < ApplicationController
     wallet_from = Wallet.find_by(owner_id: team&.id, wallet_type: "Team")
     wallet_to = current_bearer.wallet
     withdrawal_amount = withdrawal_params[:amount]
-    withdrawal = Transaction.new(
+    withdrawal = Withdrawal.new(
       to_wallet_id: wallet_to.id,
       from_wallet_id: wallet_from.id,
       trx_type: "withdrawal",

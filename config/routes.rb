@@ -1,6 +1,9 @@
 Rails.application.routes.draw do
   namespace :api do
     namespace :v1 do
+      get "price-all", to: "stock_prices#price_all"
+      get "price", to: "stock_prices#price"
+      get "prices", to: "stock_prices#prices"
       resources :api_keys, path: "api-keys", only: %i[create destroy]
       resources :users, only: [ :index, :show, :create ]
       resources :deposits, only: [ :index, :show, :create ]

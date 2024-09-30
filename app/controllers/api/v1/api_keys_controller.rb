@@ -5,6 +5,7 @@ class Api::V1::ApiKeysController < ApplicationController
   prepend_before_action :authenticate_with_api_key!, only: %i[index destroy]
 
   def index
+    current_bearer.password = decrypt(current_bearer.password)
     render json: current_bearer
   end
 

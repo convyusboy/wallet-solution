@@ -4,12 +4,12 @@ class Api::V1::DepositsController < ApplicationController
   prepend_before_action :authenticate_with_api_key!, only: %i[index show create]
 
   def index
-    deposits = Transaction.where(from_wallet_id: current_bearer.wallet.id, trx_type: "deposit")
+    deposits = Deposit.where(from_wallet_id: current_bearer.wallet.id, trx_type: "deposit")
     render json: deposits, status: 200
   end
 
   def show
-    deposit = Transaction.find_by(id: params[:id], from_wallet_id: current_bearer.wallet.id, trx_type: "deposit")
+    deposit = Deposit.find_by(id: params[:id], from_wallet_id: current_bearer.wallet.id, trx_type: "deposit")
     render json: deposit, status: 200
   end
 
@@ -17,7 +17,7 @@ class Api::V1::DepositsController < ApplicationController
     wallet_from = current_bearer.wallet
     deposit_amount = deposit_params[:amount]
     deposit_to_wallet_id = deposit_params[:to_wallet_id]
-    deposit = Transaction.new(
+    deposit = Deposit.new(
       to_wallet_id: deposit_to_wallet_id,
       from_wallet_id: wallet_from.id,
       trx_type: "deposit",

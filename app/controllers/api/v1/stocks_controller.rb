@@ -8,6 +8,11 @@ class Api::V1::StocksController < ApplicationController
     render json: stock, status: 200
   end
 
+  def price_all
+    price_all = LatestStockPrice.price_all
+    render json: price_all, status: 200
+  end
+
   def sell
     stock = current_bearer.stock
     wallet = current_bearer.wallet
